@@ -1,0 +1,2 @@
+defmodule Hand do
+end
