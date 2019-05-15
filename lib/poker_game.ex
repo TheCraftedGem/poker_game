@@ -1,16 +1,13 @@
 require IEx
 
 defmodule PokerGame do
-  @moduledoc """
-  Documentation for PokerGame.
-  """
 
   def values() do
-    ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+    %{"2" => 2, "3" => 3, "4" => 4, "5" => 5, "6" => 6, "7" => 7, "8" => 8, "9" => 9, "10" => 10, "J" => 11, "Q" => 12, "K" => 13, "A" => 14}
   end
 
   def suits() do
-    ["S", "D", "C", "H"]
+    %{"S" => 1, "D" => 1, "C" => 1, "H" => 1}
   end
 
   def hand(hand) do
@@ -18,7 +15,7 @@ defmodule PokerGame do
   end
 
   def valid_hand?(hand) do
-    card_count(hand) == 5
+    card_count(hand) == 5 && all_valid_cards?(hand)
   end
 
   def card_count(hand) do
@@ -30,24 +27,52 @@ defmodule PokerGame do
   end
 
   def valid_card?(card) do
-    value = Enum.at(converted(card), 0)
-    suit = Enum.at(converted(card), 1)
-    Enum.count(converted(card)) == 2 &&
-    valid_value?(value) &&
-    valid_suit?(suit)
+    case Enum.count(converted(card)) do
+      2 -> valid_value?(Enum.at(converted(card), 0)) && valid_suit?(Enum.at(converted(card), -1))
+      3 -> valid_value?("#{Enum.at(PokerGame.converted(card), 0)}#{Enum.at(PokerGame.converted(card), 1)}") && valid_suit?(Enum.at(converted(card), -1))
+      _ -> false
+    end
+  end
+
+  def valid_value?("10") do
+    Enum.any?(Map.keys(values()), fn x -> x == "10" end)
   end
 
   def valid_value?(value) do
-    Enum.any?(values(), fn x -> x == value end)
+    Enum.any?(Map.keys(values()), fn x -> x == value end)
   end
 
   def valid_suit?(suit) do
-    Enum.any?(suits(), fn x -> x == suit end)
+    Enum.any?(Map.keys(suits()), fn x -> x == suit end)
   end
 
   def converted(card) do
     String.split(card, "")
-    |> Enum.drop(-1)
-    |> Enum.drop(1)
+    |> Enum.reject(fn x -> x == "" end)
+  end
+
+  def split_hand(hand) do
+    Enum.map(hand, fn x ->
+      String.split(x, "") |> Enum.reject(fn x -> x == "" end)
+    end)
+  end
+
+  def compare(hand_1, hand_2) do
+    if valid_hand?(hand_1) && valid_hand?(hand_2) do
+      hand_1 = split_hand(hand_1)
+      hand_2 = split_hand(hand_2)
+
+      group_1 = Enum.reverse(Enum.sort(Enum.group_by(hand_1, fn x ->
+      values()[Enum.at( x, 0)]  end)))
+
+      group_2 = Enum.reverse(Enum.sort(Enum.group_by(hand_2, fn x ->
+      values()[Enum.at( x, 0)]  end)))
+
+      IEx.pry
+      # Enum.group_by(hand_1, fn x -> Enum.map(hand_1, fn x -> values()[Enum.at(x, 0)]) end)
+
+
+
+    end
   end
 end

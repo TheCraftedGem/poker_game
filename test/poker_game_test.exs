@@ -52,4 +52,18 @@ defmodule PokerGameTest do
     assert hand_1 == ["2D", "3D", "9H", "8C", "KS"]
     assert hand_2 == ["2D", "3D", "9D", "8H", "KS"]
   end
+
+  test "can split up a hand into a list of 2 element lists" do
+    hand = PokerGame.hand(["2D", "3D", "9H", "8C", "KS"])
+
+    assert [["2", "D"], ["3", "D"], ["9", "H"], ["8", "C"], ["K", "S"] ]== PokerGame.split_hand(hand)
+  end
+
+  test "hand with high card wins" do
+    hand_1 = PokerGame.hand(["2D", "2D", "9H", "8C", "KS"])
+    hand_2 = PokerGame.hand(["2D", "3D", "9D", "8H", "10S"])
+
+    assert hand_1 == PokerGame.compare(hand_1, hand_2)
+
+  end
 end
