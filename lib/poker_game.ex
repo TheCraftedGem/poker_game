@@ -2,29 +2,26 @@ require IEx
 
 defmodule PokerGame do
 
-  def values() do
-    %{"2" => 2, "3" => 3, "4" => 4, "5" => 5, "6" => 6, "7" => 7, "8" => 8, "9" => 9, "10" => 10, "J" => 11, "Q" => 12, "K" => 13, "A" => 14}
-  end
+  def values(), do:
+    %{"2" => 2, "3" => 3,
+      "4" => 4, "5" => 5,
+      "6" => 6, "7" => 7,
+      "8" => 8, "9" => 9,
+      "10" => 10, "J" => 11,
+      "Q" => 12, "K" => 13,
+      "A" => 14}
 
-  def suits() do
-    %{"S" => 1, "D" => 1, "C" => 1, "H" => 1}
-  end
+  def suits(), do: %{"S" => 1, "D" => 1, "C" => 1, "H" => 1}
 
-  def hand(hand) do
-    hand
-  end
 
-  def valid_hand?(hand) do
-    card_count(hand) == 5 && all_valid_cards?(hand)
-  end
+  def hand(hand), do: hand
 
-  def card_count(hand) do
-    Enum.count(hand)
-  end
+  def valid_hand?(hand), do: card_count(hand) == 5 && all_valid_cards?(hand)
 
-  def all_valid_cards?(hand) do
-    Enum.all?(hand, fn x -> valid_card?(x) == true end)
-  end
+
+  def card_count(hand), do: Enum.count(hand)
+
+  def all_valid_cards?(hand), do: Enum.all?(hand, fn x -> valid_card?(x) == true end)
 
   def valid_card?(card) do
     case Enum.count(convert(card)) do
@@ -35,7 +32,7 @@ defmodule PokerGame do
   end
 
   def valid_value?("10") do
-    Enum.any?(Map.keys(values()), fn x -> x == "10" end)
+    true
   end
 
   def valid_value?(value) do
@@ -72,12 +69,12 @@ defmodule PokerGame do
       hand_2 = split_hand(hand_2)
 
       group_1 = Enum.reverse(Enum.sort(Enum.group_by(hand_1, fn x ->
-      values()[Enum.at( x, 0)]  end)))
+                  values()[Enum.at( x, 0)]  end)))
 
       group_2 = Enum.reverse(Enum.sort(Enum.group_by(hand_2, fn x ->
-      values()[Enum.at( x, 0)]  end)))
+                  values()[Enum.at( x, 0)]  end)))
 
-
+      #Exampkle Of Return "Black Wins - #{high card: Ace}"
       IEx.pry
 
 
