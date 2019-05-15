@@ -27,9 +27,9 @@ defmodule PokerGame do
   end
 
   def valid_card?(card) do
-    case Enum.count(converted(card)) do
-      2 -> valid_value?(Enum.at(converted(card), 0)) && valid_suit?(Enum.at(converted(card), -1))
-      3 -> valid_value?("#{Enum.at(PokerGame.converted(card), 0)}#{Enum.at(PokerGame.converted(card), 1)}") && valid_suit?(Enum.at(converted(card), -1))
+    case Enum.count(convert(card)) do
+      2 -> valid_value?(Enum.at(convert(card), 0)) && valid_suit?(Enum.at(convert(card), -1))
+      3 -> valid_value?("#{Enum.at(PokerGame.convert(card), 0)}#{Enum.at(PokerGame.convert(card), 1)}") && valid_suit?(Enum.at(convert(card), -1))
       _ -> false
     end
   end
@@ -46,14 +46,23 @@ defmodule PokerGame do
     Enum.any?(Map.keys(suits()), fn x -> x == suit end)
   end
 
-  def converted(card) do
+  def convert(card) do
     String.split(card, "")
     |> Enum.reject(fn x -> x == "" end)
   end
 
+  def convert_ten(suit) do
+    ["10", suit]
+  end
+
   def split_hand(hand) do
     Enum.map(hand, fn x ->
-      String.split(x, "") |> Enum.reject(fn x -> x == "" end)
+      if Enum.count(convert(x)) == 2 do
+        convert(x)
+      else
+        suit = Enum.at(convert(x), -1)
+        convert_ten(suit)
+      end
     end)
   end
 
@@ -68,9 +77,8 @@ defmodule PokerGame do
       group_2 = Enum.reverse(Enum.sort(Enum.group_by(hand_2, fn x ->
       values()[Enum.at( x, 0)]  end)))
 
-      IEx.pry
-      # Enum.group_by(hand_1, fn x -> Enum.map(hand_1, fn x -> values()[Enum.at(x, 0)]) end)
 
+      IEx.pry
 
 
     end
