@@ -11,13 +11,11 @@ defmodule PokerGame do
       "Q" => 12, "K" => 13,
       "A" => 14}
 
-  def suits(), do: %{"S" => 1, "D" => 1, "C" => 1, "H" => 1}
-
+  def suits(), do: %{"S" => 10, "D" => 20, "C" => 30, "H" => 40}
 
   def hand(hand), do: hand
 
   def valid_hand?(hand), do: card_count(hand) == 5 && all_valid_cards?(hand)
-
 
   def card_count(hand), do: Enum.count(hand)
 
@@ -54,11 +52,9 @@ defmodule PokerGame do
 
   def split_hand(hand) do
     Enum.map(hand, fn x ->
-      if Enum.count(convert(x)) == 2 do
-        convert(x)
-      else
-        suit = Enum.at(convert(x), -1)
-        convert_ten(suit)
+      case Enum.count(convert(x)) do
+        2 -> convert(x)
+        _ -> convert_ten(Enum.at(convert(x), -1))
       end
     end)
   end
@@ -67,15 +63,17 @@ defmodule PokerGame do
     if valid_hand?(hand_1) && valid_hand?(hand_2) do
       hand_1 = split_hand(hand_1)
       hand_2 = split_hand(hand_2)
-
+      IEx.pry
       group_1 = Enum.reverse(Enum.sort(Enum.group_by(hand_1, fn x ->
                   values()[Enum.at( x, 0)]  end)))
 
       group_2 = Enum.reverse(Enum.sort(Enum.group_by(hand_2, fn x ->
                   values()[Enum.at( x, 0)]  end)))
 
-      #Exampkle Of Return "Black Wins - #{high card: Ace}"
-      IEx.pry
+                  IEx.pry
+
+      #Exampkle Of Return "Black Wins - #{high card: Ace}
+      #To Find Straights Sort Cards and subtract low card from high, if equal to 4 it's a straight
 
 
     end
