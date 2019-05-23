@@ -24,7 +24,8 @@ defmodule PokerGame do
   def valid_card?(card) do
     case Enum.count(convert(card)) do
       2 -> valid_value?(Enum.at(convert(card), 0)) && valid_suit?(Enum.at(convert(card), -1))
-      3 -> valid_value?("#{Enum.at(PokerGame.convert(card), 0)}#{Enum.at(PokerGame.convert(card), 1)}") && valid_suit?(Enum.at(convert(card), -1))
+      3 -> valid_value?("#{Enum.at(PokerGame.convert(card), 0)}#{Enum.at(PokerGame.convert(card), 1)}")
+        && valid_suit?(Enum.at(convert(card), -1))
       _ -> false
     end
   end
@@ -59,23 +60,48 @@ defmodule PokerGame do
     end)
   end
 
+  def group_by_values(hand) do
+    Enum.into(Enum.group_by(hand, fn x ->
+      values()[Enum.at( x, 0)]  end), %{})
+  end
+
   def compare(hand_1, hand_2) do
     if valid_hand?(hand_1) && valid_hand?(hand_2) do
-      hand_1 = split_hand(hand_1)
-      hand_2 = split_hand(hand_2)
-      IEx.pry
-      group_1 = Enum.reverse(Enum.sort(Enum.group_by(hand_1, fn x ->
-                  values()[Enum.at( x, 0)]  end)))
+      evaluate(group_by_values(split_hand(hand_1)), group_by_values(split_hand(hand_2)))
+    end
+  end
 
-      group_2 = Enum.reverse(Enum.sort(Enum.group_by(hand_2, fn x ->
-                  values()[Enum.at( x, 0)]  end)))
+  def no_pairs?(hand) do
+    Enum.all?(Map.values(hand), fn x -> Enum.count(x) == 1 end)
+  end
 
-                  IEx.pry
+  def pairs?(hand) do
+    Enum.any?(Map.values(hand), fn x -> Enum.count(x) == 2 end)
+  end
 
-      #Exampkle Of Return "Black Wins - #{high card: Ace}
-      #To Find Straights Sort Cards and subtract low card from high, if equal to 4 it's a straight
+  def pair_count(hand) do
+    Enum.max_by(hand, fn {k, v} -> Enum.count(v) end)
+    |> Tuple.to_list
+    |> List.flatten
+    |> List.delete_at(0)
+    |> Enum.count
+    |> div(2)
+    |> div(2)
+  end
 
-
+  def evaluate(hand_1, hand_2) do
+    if no_pairs?(hand_1) && no_pairs?(hand_2) do
+      case Enum.max(hand_1) > Enum.max(hand_2)  do
+        true -> "Black Wins - high card: #{Enum.at(List.flatten(Enum.at(Tuple.to_list(Enum.max(hand_1)), 1)), 0)}"
+        false -> "White Wins - high card: #{Enum.at(List.flatten(Enum.at(Tuple.to_list(Enum.max(hand_2)), 1)), 0)}"
+      end
+    else
+      if pairs?(hand_1) || pairs?(hand_2) do
+        case pair_count(hand_1) > pair_count(hand_2)  do
+          true -> "Black Wins - pair"
+          false -> "White Wins - pair"
+        end
+      end
     end
   end
 end
