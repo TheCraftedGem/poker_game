@@ -1,5 +1,4 @@
 require IEx
-
 defmodule PokerGame do
 
   def values(), do:
@@ -43,8 +42,7 @@ defmodule PokerGame do
   end
 
   def convert(card) do
-    String.split(card, "")
-    |> Enum.reject(fn x -> x == "" end)
+    String.codepoints(card)
   end
 
   def convert_ten(suit) do
@@ -61,47 +59,90 @@ defmodule PokerGame do
   end
 
   def group_by_values(hand) do
-    Enum.into(Enum.group_by(hand, fn x ->
-      values()[Enum.at( x, 0)]  end), %{})
-  end
-
-  def compare(hand_1, hand_2) do
-    if valid_hand?(hand_1) && valid_hand?(hand_2) do
-      evaluate(group_by_values(split_hand(hand_1)), group_by_values(split_hand(hand_2)))
-    end
-  end
-
-  def no_pairs?(hand) do
-    Enum.all?(Map.values(hand), fn x -> Enum.count(x) == 1 end)
-  end
-
-  def pairs?(hand) do
-    Enum.any?(Map.values(hand), fn x -> Enum.count(x) == 2 end)
+    split_hand(hand)
+    |> Enum.group_by(fn x -> values()[Enum.at(x, 0)]  end)
+    |> Enum.into(%{})
   end
 
   def pair_count(hand) do
-    Enum.max_by(hand, fn {k, v} -> Enum.count(v) end)
+    group_by_values(hand)
+    |> Enum.filter(fn {_k, v} -> Enum.count(v) == 2 end)
+    |> Enum.map(fn x -> Tuple.to_list(x) end)
+    |> List.flatten
+    |> List.delete_at(0)
+    |> Enum.count
+    |> div(4)
+  end
+
+  def three_count(hand) do
+    Enum.max_by(group_by_values(hand), fn x -> tuple_size(x) end)
     |> Tuple.to_list
     |> List.flatten
     |> List.delete_at(0)
     |> Enum.count
-    |> div(2)
-    |> div(2)
+    |> div(6)
   end
 
-  def evaluate(hand_1, hand_2) do
-    if no_pairs?(hand_1) && no_pairs?(hand_2) do
-      case Enum.max(hand_1) > Enum.max(hand_2)  do
-        true -> "Black Wins - high card: #{Enum.at(List.flatten(Enum.at(Tuple.to_list(Enum.max(hand_1)), 1)), 0)}"
-        false -> "White Wins - high card: #{Enum.at(List.flatten(Enum.at(Tuple.to_list(Enum.max(hand_2)), 1)), 0)}"
-      end
-    else
-      if pairs?(hand_1) || pairs?(hand_2) do
-        case pair_count(hand_1) > pair_count(hand_2)  do
-          true -> "Black Wins - pair"
-          false -> "White Wins - pair"
-        end
-      end
+  def no_pairs?(hand) do
+    with true <- valid_hand?(hand) do
+      group_by_values(hand)
+      |> Map.values
+      |> Enum.all?(fn x -> Enum.count(x) == 1 end)
     end
   end
+
+  def pairs?(hand) do
+    with true <- valid_hand?(hand) do
+      group_by_values(hand)
+      |>Map.values
+      |>Enum.any?(fn x -> Enum.count(x) == 2 end)
+    end
+  end
+
+  def three_of_a_kind?(hand) do
+    with true <- valid_hand?(hand) do
+      group_by_values(hand)
+      |>Map.values
+      |>Enum.any?(fn x -> Enum.count(x) == 3 end)
+    end
+  end
+
+  def compare(hand_1, hand_2) do
+    with true <- three_of_a_kind?(hand_1) || three_of_a_kind?(hand_2) do
+      evaluate_three_of_a_kind(hand_1, hand_2)
+    end
+  ||
+    with true <- pairs?(hand_1) || pairs?(hand_2) do
+      evaluate_pairs(hand_1, hand_2)
+    end
+  ||
+    with true <- no_pairs?(hand_1) && no_pairs?(hand_2) do
+      evaluate_high_card(hand_1, hand_2)
+    end
+  end
+
+  def evaluate_high_card(hand_1, hand_2)  do
+    case Enum.max(group_by_values(hand_1)) > Enum.max(group_by_values(hand_2))  do
+      true  -> "Black Wins - high card: #{Enum.at(List.flatten(Enum.at(Tuple.to_list(Enum.max(group_by_values(hand_1))), 1)), 0)}"
+      false -> "White Wins - high card: #{Enum.at(List.flatten(Enum.at(Tuple.to_list(Enum.max(group_by_values(hand_2))), 1)), 0)}"
+    end
+  end
+
+  def evaluate_three_of_a_kind(hand_1, hand_2)  do
+    case three_count(hand_1) > three_count(hand_2)  do
+      true  -> "Black Wins - 3 of a kind"
+      false -> "White Wins - 3 of a kind"
+    end
+  end
+
+
+  def evaluate_pairs(hand_1, hand_2) do
+    case pair_count(hand_1) > pair_count(hand_2) do
+      true  -> "Black Wins - pair"
+      false -> "White Wins - pair"
+    end
+  end
+
+
 end
+# Enum.map(hand, fn <<value::bytes-1, suit::binary>> -> {value, suit} end)  |> Enum.map(fn {v, s} -> {PokerGame.values()[v], s} end)

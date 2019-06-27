@@ -66,14 +66,25 @@ defmodule PokerGameTest do
     assert "Black Wins - high card: K" == PokerGame.compare(hand_1, hand_2)
   end
 
-  test "hand with pair wins" do
-    black = PokerGame.hand(["2D", "2H", "9H", "8C", "KS"])
-    white = PokerGame.hand(["2S", "3D", "9D", "8H", "10S"])
+  test "hand with pair wins against no pair" do
+    black = PokerGame.hand(["2D", "2H", "3H", "4C", "KS"])
+    white = PokerGame.hand(["2S", "4D", "9D", "8H", "10S"])
 
     black_2 = PokerGame.hand(["4D", "2H", "9H", "8C", "KS"])
     white_2 = PokerGame.hand(["3S", "3D", "9D", "8H", "10S"])
-
     assert "Black Wins - pair" == PokerGame.compare(black, white)
+
     assert "White Wins - pair" == PokerGame.compare(black_2, white_2)
+  end
+
+  test "hand with 3 of a kind wins against pair" do
+    black = PokerGame.hand(["2D", "2H", "2S", "8C", "KS"])
+    white = PokerGame.hand(["3S", "3D", "9D", "8H", "10S"])
+
+    black_2 = PokerGame.hand(["4D", "4H", "9H", "8C", "KS"])
+    white_2 = PokerGame.hand(["3S", "3D", "3C", "8H", "10S"])
+
+    assert "Black Wins - 3 of a kind" == PokerGame.compare(black, white)
+    assert "White Wins - 3 of a kind" == PokerGame.compare(black_2, white_2)
   end
 end
