@@ -108,17 +108,9 @@ defmodule PokerGame do
   end
 
   def compare(hand_1, hand_2) do
-    with true <- three_of_a_kind?(hand_1) || three_of_a_kind?(hand_2) do
-      evaluate_three_of_a_kind(hand_1, hand_2)
-    end
-  ||
-    with true <- pairs?(hand_1) || pairs?(hand_2) do
-      evaluate_pairs(hand_1, hand_2)
-    end
-  ||
-    with true <- no_pairs?(hand_1) && no_pairs?(hand_2) do
-      evaluate_high_card(hand_1, hand_2)
-    end
+    with true <- three_of_a_kind?(hand_1) || three_of_a_kind?(hand_2) do evaluate_three_of_a_kind(hand_1, hand_2) end ||
+    with true <- pairs?(hand_1) || pairs?(hand_2) do evaluate_pairs(hand_1, hand_2) end ||
+    with true <- no_pairs?(hand_1) && no_pairs?(hand_2), do: evaluate_high_card(hand_1, hand_2)
   end
 
   def evaluate_high_card(hand_1, hand_2)  do
