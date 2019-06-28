@@ -1,5 +1,6 @@
 require IEx
 defmodule PokerGame do
+  import Validation
 
   def values(), do:
     %{"2" => 2, "3" => 3,
@@ -94,23 +95,46 @@ defmodule PokerGame do
   def pairs?(hand) do
     with true <- valid_hand?(hand) do
       group_by_values(hand)
-      |>Map.values
-      |>Enum.any?(fn x -> Enum.count(x) == 2 end)
+      |> Map.values
+      |> Enum.any?(fn x -> Enum.count(x) == 2 end)
     end
   end
 
   def three_of_a_kind?(hand) do
     with true <- valid_hand?(hand) do
       group_by_values(hand)
-      |>Map.values
-      |>Enum.any?(fn x -> Enum.count(x) == 3 end)
+      |> Map.values
+      |> Enum.any?(fn x -> Enum.count(x) == 3 end)
     end
   end
 
-  def compare(hand_1, hand_2) do
+  def straight?(hand) do
+    with true <- valid_hand?(hand) && valid_range?(hand) do
+      hand = group_by_values(hand)
+      [a, _, _, _, e] = Map.keys(hand)
+      e - a == 4
+    end
+  end
+
+  def valid_range?(hand) do
+    hand = group_by_values(hand)
+    IEx.pry
+    first = Map.keys(hand) |> List.first
+    last  = Map.keys(hand) |> List.last
+
+    Range.new(first, last)
+    |>Enum.all?(fn _f -> Map.keys(hand) end)
+  end
+
+  def compare(hand_1, hand_2)  do
+    with true <- straight?(hand_1) || straight?(hand_2) do evaluate_straight(hand_1, hand_2) end ||
     with true <- three_of_a_kind?(hand_1) || three_of_a_kind?(hand_2) do evaluate_three_of_a_kind(hand_1, hand_2) end ||
     with true <- pairs?(hand_1) || pairs?(hand_2) do evaluate_pairs(hand_1, hand_2) end ||
-    with true <- no_pairs?(hand_1) && no_pairs?(hand_2), do: evaluate_high_card(hand_1, hand_2)
+    evaluate_high_card(hand_1, hand_2)
+  end
+
+  def evaluate_straight(hand_1, hand_2) do
+    IEx.pry
   end
 
   def evaluate_high_card(hand_1, hand_2)  do
@@ -134,7 +158,5 @@ defmodule PokerGame do
       false -> "White Wins - pair"
     end
   end
-
-
 end
 # Enum.map(hand, fn <<value::bytes-1, suit::binary>> -> {value, suit} end)  |> Enum.map(fn {v, s} -> {PokerGame.values()[v], s} end)
